@@ -814,28 +814,28 @@ describe(
           expect(tileEngine.objects.length).to.equal(2);
         });
 
-	it('should set object sx and sy to tile engine camera', () => {
-	  tileEngine.sx = 20;
-	  tileEngine.sy = 30;
+        it('should set object sx and sy to tile engine camera', () => {
+          tileEngine.sx = 20;
+          tileEngine.sy = 30;
 
-	  tileEngine.add(obj);
+          tileEngine.add(obj);
 
-	  expect(obj.sx).to.equal(20);
-	  expect(obj.sy).to.equal(30);
-	});
+          expect(obj.sx).to.equal(20);
+          expect(obj.sy).to.equal(30);
+        });
 
-	it('should update objects sx property when tile engine camera changes', () => {
-	  tileEngine.add(obj);
+        it('should update objects sx property when tile engine camera changes', () => {
+          tileEngine.add(obj);
 
-	  expect(obj.sx).to.equal(0);
-	  expect(obj.sy).to.equal(0);
+          expect(obj.sx).to.equal(0);
+          expect(obj.sy).to.equal(0);
 
-	  tileEngine.sx = 20;
-	  tileEngine.sy = 30;
+          tileEngine.sx = 20;
+          tileEngine.sy = 30;
 
-	  expect(obj.sx).to.equal(20);
-	  expect(obj.sy).to.equal(30);
-	});
+          expect(obj.sx).to.equal(20);
+          expect(obj.sy).to.equal(30);
+        });
       } else {
         it('should not exist', () => {
           expect(tileEngine.add).to.not.exist;
@@ -892,14 +892,14 @@ describe(
           expect(tileEngine.objects.length).to.equal(0);
         });
 
-	it('should reset object sx and sy', () => {
-	  tileEngine.add(obj);
-	  tileEngine.sx = 20;
-	  tileEngine.sy = 30;
-	  tileEngine.remove(obj);
-	  expect(obj.sx).to.equal(0);
-	  expect(obj.sy).to.equal(0);
-	});
+        it('should reset object sx and sy', () => {
+          tileEngine.add(obj);
+          tileEngine.sx = 20;
+          tileEngine.sy = 30;
+          tileEngine.remove(obj);
+          expect(obj.sx).to.equal(0);
+          expect(obj.sy).to.equal(0);
+        });
 
         it('should not error if the object was not added before', () => {
           function fn() {

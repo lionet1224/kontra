@@ -154,15 +154,15 @@ describe('tileEngine integration', () => {
       width: 50,
       height: 50,
       tilesets: [
-	{
-	  image: new Image()
-	}
+        {
+          image: new Image()
+        }
       ],
       layers: [
-	{
-	  name: 'test',
-	  data: [0, 0, 1, 0, 0]
-	}
+        {
+          name: 'test',
+          data: [0, 0, 1, 0, 0]
+        }
       ]
     };
     let tileEngine = TileEngine(data);
@@ -189,15 +189,15 @@ describe('tileEngine integration', () => {
       width: 50,
       height: 50,
       tilesets: [
-	{
-	  image: new Image()
-	}
+        {
+          image: new Image()
+        }
       ],
       layers: [
-	{
-	  name: 'test',
-	  data: [0, 0, 1, 0, 0]
-	}
+        {
+          name: 'test',
+          data: [0, 0, 1, 0, 0]
+        }
       ]
     };
     let tileEngine = TileEngine(data);

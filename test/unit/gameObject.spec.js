@@ -102,22 +102,22 @@ describe(
       }
 
       if (testContext.GAMEOBJECT_CAMERA) {
-	it('should set default camera', () => {
-	  expect(gameObject.sx).to.equal(0);
-	  expect(gameObject.sy).to.equal(0);
-	});
+        it('should set default camera', () => {
+          expect(gameObject.sx).to.equal(0);
+          expect(gameObject.sy).to.equal(0);
+        });
 
-	it('should set sx and sy properties', () => {
-	  gameObject = GameObject({ sx: 10, sy: 20 });
+        it('should set sx and sy properties', () => {
+          gameObject = GameObject({ sx: 10, sy: 20 });
 
-	  expect(gameObject.sx).to.equal(10);
-	  expect(gameObject.sy).to.equal(20);
-	});
+          expect(gameObject.sx).to.equal(10);
+          expect(gameObject.sy).to.equal(20);
+        });
       } else {
-	it('should not default camera', () => {
-	  expect(gameObject.sx).to.not.exist;
-	  expect(gameObject.sy).to.not.exist;
-	});
+        it('should not default camera', () => {
+          expect(gameObject.sx).to.not.exist;
+          expect(gameObject.sy).to.not.exist;
+        });
       }
 
       if (testContext.GAMEOBJECT_GROUP) {
@@ -264,35 +264,35 @@ describe(
       }
 
       if (testContext.GAMEOBJECT_CAMERA) {
-	it('should translate by the camera', () => {
-	  gameObject.sx = 10;
-	  gameObject.sy = 20;
+        it('should translate by the camera', () => {
+          gameObject.sx = 10;
+          gameObject.sy = 20;
 
-	  sinon.stub(gameObject.context, 'translate');
+          sinon.stub(gameObject.context, 'translate');
 
-	  gameObject.render();
+          gameObject.render();
 
-	  expect(gameObject.context.translate.calledWith(-10, -20)).to.be.true;
-	});
+          expect(gameObject.context.translate.calledWith(-10, -20)).to.be.true;
+        });
 
-	it('should not translate if camera is {0, 0}', () => {
-	  sinon.stub(gameObject.context, 'translate');
+        it('should not translate if camera is {0, 0}', () => {
+          sinon.stub(gameObject.context, 'translate');
 
-	  gameObject.render();
+          gameObject.render();
 
-	  expect(gameObject.context.translate.called).to.be.false;
-	});
+          expect(gameObject.context.translate.called).to.be.false;
+        });
       } else {
-	it('should not translate by camera', () => {
-	  gameObject.sx = 10;
-	  gameObject.sy = 20;
+        it('should not translate by camera', () => {
+          gameObject.sx = 10;
+          gameObject.sy = 20;
 
-	  sinon.stub(gameObject.context, 'translate');
+          sinon.stub(gameObject.context, 'translate');
 
-	  gameObject.render();
+          gameObject.render();
 
-	  expect(gameObject.context.translate.called).to.be.false;
-	});
+          expect(gameObject.context.translate.called).to.be.false;
+        });
       }
 
       if (testContext.GAMEOBJECT_SCALE) {
