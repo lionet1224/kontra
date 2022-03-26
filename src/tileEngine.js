@@ -244,10 +244,12 @@ class TileEngine {
   // @see http://stackoverflow.com/questions/19338032/canvas-indexsizeerror-index-or-size-is-negative-or-greater-than-the-allowed-a
   set sx(value) {
     this._sx = clamp(0, this.mapwidth - getCanvas().width, value);
+    this._o.map(obj => (obj.sx = this._sx));
   }
 
   set sy(value) {
     this._sy = clamp(0, this.mapheight - getCanvas().height, value);
+    this._o.map(obj => (obj.sy = this._sy));
   }
 
   set objects(value) {
@@ -269,6 +271,8 @@ class TileEngine {
   add(...objects) {
     objects.flat().map(object => {
       this._o.push(object);
+      object.sx = this._sx;
+      object.sy = this._sy;
     });
   }
 
@@ -282,6 +286,7 @@ class TileEngine {
   remove(...objects) {
     objects.flat().map(object => {
       removeFromArray(this._o, object);
+      object.sx = object.sy = 0;
     });
   }
   // @endif
@@ -526,18 +531,7 @@ class TileEngine {
     // @ifdef TILEENGINE_CAMERA
     // draw objects
     if (_renderObjects) {
-      context.save();
-
-      // it's faster to only translate if one of the values is
-      // non-zero rather than always translating
-      // @see https://jsperf.com/translate-or-if-statement/2
-      if (sx || sy) {
-        context.translate(-sx, -sy);
-      }
-
       this.objects.map(obj => obj.render && obj.render());
-
-      context.restore();
     }
     // @endif
   }

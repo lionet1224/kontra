@@ -286,6 +286,14 @@ class Scene {
     let { x, y } = object.world || object;
     this.camera.x = x;
     this.camera.y = y;
+
+    let sx = this.camera.centerX - x;
+    let sy = this.camera.centerY - y;
+
+    this._o.map(object => {
+      object.sx = sx;
+      object.sy = sy;
+    });
   }
 
   /**
@@ -318,7 +326,9 @@ class Scene {
 
     // translate the canvas again (this time using camera scale)
     // to properly move the scene the direction of the camera
-    context.translate(_sx, _sy);
+    // context.translate(_sx, _sy);
+    context.fillStyle = 'yellow';
+    context.fillRect(0,0,10,10);
 
     let objects = _o;
     if (cullObjects) {
@@ -342,18 +352,18 @@ class Scene {
       let { context, camera } = this;
       let { x, y, centerX, centerY } = camera;
 
-      context.save();
+      // context.save();
 
       // translate the camera back to the center of the canvas
       // (ignoring scale) since the camera x/y position moves
       // the camera off-center
-      this._sx = centerX - x;
-      this._sy = centerY - y;
-      context.translate(this._sx, this._sy);
+      // this._sx = centerX - x;
+      // this._sy = centerY - y;
+      // context.translate(this._sx, this._sy);
 
       camera.render();
 
-      context.restore();
+      // context.restore();
     }
   }
 

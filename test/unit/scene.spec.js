@@ -534,19 +534,6 @@ describe('scene', () => {
       expect(fn).to.not.throw();
     });
 
-    it('should translate the canvas to the camera', () => {
-      let spy = sinon.spy(scene.context, 'translate');
-
-      scene.lookAt({ x: 10, y: 10 });
-      scene.render();
-
-      expect(spy.firstCall.calledWith(290, 290)).to.be.true;
-      let calls = spy.getCalls();
-      expect(calls[calls.length - 2].calledWith(290, 290)).to.be.true;
-
-      spy.restore();
-    });
-
     it('should sort objects', () => {
       scene.cullObjects = false;
       scene.objects = [{ y: 20 }, { y: 10 }];

@@ -128,7 +128,7 @@
  */
 
 /**
- * Managing the correct x and y position of sprites on a large tile map can be tricky. You can add objects to the tile map and the tile map will render each object with the correct camera position.
+ * Managing the correct x and y position of sprites on a large tile map can be tricky. You can add objects to the tile map which will sync the camera position with the sprite. [Sprite](api/sprite) will automatically draw the sprite for you at the correct position on the tile map even while the camera moves.
  *
  * @sectionName Adding Objects to the TileMap
  * @example
@@ -146,7 +146,7 @@
  *     // exclude-code:start
  *     tileEngine.context = context;
  *     // exclude-code:end
- *
+ *     kontra.initPointer();
  *     let spriteSheet = SpriteSheet({
  *       image: imageAssets['assets/imgs/mapPack_tilesheet.png'],
  *       frameWidth: 64,
@@ -163,8 +163,12 @@
  *     let sprite = Sprite({
  *       x: 192,
  *       y: 128,
- *       animations: spriteSheet.animations
+ *       animations: spriteSheet.animations,
+ *       onDown() {
+ *         console.log('click');
+ *       }
  *     });
+ *     kontra.track(sprite);
  *
  *     // sync the tile map camera and the sprite
  *     tileEngine.add(sprite);

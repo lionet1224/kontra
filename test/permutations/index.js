@@ -15,6 +15,7 @@ let options = {
   ],
   gameObject: [
     'GAMEOBJECT_ANCHOR',
+    'GAMEOBJECT_CAMERA',
     'GAMEOBJECT_GROUP',
     'GAMEOBJECT_OPACITY',
     'GAMEOBJECT_ROTATION',

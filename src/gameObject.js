@@ -24,6 +24,8 @@ import { noop, removeFromArray } from './utils.js';
  * @param {Number} [properties.ttl=Infinity] - How many frames the game object should be alive. Used by [Pool](api/pool).
  *
  * @param {{x: Number, y: Number}} [properties.anchor={x:0,y:0}] - The x and y origin of the game object. {x:0, y:0} is the top left corner of the game object, {x:1, y:1} is the bottom right corner.
+ * @param {Number} [properties.sx=0] - The x camera position.
+ * @param {Number} [properties.sy=0] - The y camera position.
  * @param {GameObject[]} [properties.children] - Children to add to the game object.
  * @param {Number} [properties.opacity=1] - The opacity of the game object.
  * @param {Number} [properties.rotation=0] - The rotation around the anchor in radians.
@@ -147,6 +149,22 @@ class GameObject extends Updatable {
     anchor = { x: 0, y: 0 },
     // @endif
 
+    // @ifdef GAMEOBJECT_CAMERA
+    /**
+     * The X coordinate of the camera.
+     * @memberof GameObject
+     * @property {Number} sx
+     */
+    sx = 0,
+
+    /**
+     * The Y coordinate of the camera.
+     * @memberof GameObject
+     * @property {Number} sy
+     */
+    sy = 0,
+    // @endif
+
     // @ifdef GAMEOBJECT_OPACITY
     /**
      * The opacity of the object. Represents the local opacity of the object as opposed to the [world](api/gameObject#world) opacity.
@@ -199,6 +217,11 @@ class GameObject extends Updatable {
 
       // @ifdef GAMEOBJECT_ANCHOR
       anchor,
+      // @endif
+
+      // @ifdef GAMEOBJECT_CAMERA
+      sx,
+      sy,
       // @endif
 
       // @ifdef GAMEOBJECT_OPACITY
@@ -260,6 +283,13 @@ class GameObject extends Updatable {
     if (this.x || this.y) {
       context.translate(this.x, this.y);
     }
+
+    // @ifdef GAMEOBJECT_CAMERA
+    // 2) translate to the camera position
+    if (this.sx || this.sy) {
+      context.translate(-this.sx, -this.sy);
+    }
+    // @endif
 
     // @ifdef GAMEOBJECT_ROTATION
     // 3) rotate around the anchor
