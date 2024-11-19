@@ -417,6 +417,32 @@ Have a game you want to add? [Let me know](https://github.com/straker/kontra/iss
 </small></span>
     </a>
   </li>  
+
+
+  <li>
+    <a href="https://js13kgames.com/entries/trench-fisher">
+      <img src="assets/imgs/games/trench-fisher.jpeg" alt="" loading="lazy" width="400" height="250"/>
+      <span>Trench fisher</span>
+      <span><span class="visually-hidden">. By </span><small>John Swana
+</small></span>
+    </a>
+  </li>  
+
+  <li>
+    <a href="https://js13kgames.com/entries/mongol-march">
+      <img src="assets/imgs/games/mongol-march.png" alt="" loading="lazy" width="400" height="250"/>
+      <span>Mongol March</span>
+      <span><span class="visually-hidden">. By </span><small>Leo Kuo</small></span>
+    </a>
+  </li>
+
+  <li>
+    <a href="https://js13kgames.com/entries/bubble-burst">
+      <img src="assets/imgs/games/bubble-burst.png" alt="A blue bubble smiling" loading="lazy" width="400" height="250"/>
+      <span>Bubble Burst</span>
+      <span><span class="visually-hidden">. By </span><small>johnedvard</small></span>
+    </a>
+  </li>
 </ul>
 
 @section Games Made with Kontra.js

@@ -1,7 +1,6 @@
 import { getCanvas } from './core.js';
 import { on, emit } from './events.js';
-import { getWorldRect } from './helpers.js';
-import { removeFromArray } from './utils.js';
+import { removeFromArray, circleRectCollision } from './utils.js';
 
 /**
  * A simple pointer API. You can use it move the main sprite or respond to a pointer event. Works with both mouse and touch events.
@@ -117,26 +116,6 @@ export function getPointer(canvas = getCanvas()) {
 }
 
 /**
- * Detection collision between a rectangle and a circle.
- * @see https://yal.cc/rectangle-circle-intersection-test/
- *
- * @param {Object} object - Object to check collision against.
- */
-function circleRectCollision(object, pointer) {
-  let { x, y, width, height } = getWorldRect(object);
-
-  // account for camera
-  do {
-    x -= object.sx || 0;
-    y -= object.sy || 0;
-  } while ((object = object.parent));
-
-  let dx = pointer.x - Math.max(x, Math.min(pointer.x, x + width));
-  let dy = pointer.y - Math.max(y, Math.min(pointer.y, y + height));
-  return dx * dx + dy * dy < pointer.radius * pointer.radius;
-}
-
-/**
  * Get the first on top object that the pointer collides with.
  *
  * @param {Object} pointer - The pointer object
@@ -154,7 +133,7 @@ function getCurrentObject(pointer) {
     let object = renderedObjects[i];
     let collides = object.collidesWithPointer
       ? object.collidesWithPointer(pointer)
-      : circleRectCollision(object, pointer);
+      : circleRectCollision(pointer, object);
 
     if (collides) {
       return object;
@@ -463,12 +442,12 @@ export function track(...objects) {
 
     // override the objects render function to keep track of render
     // order
-    if (!object._r) {
-      object._r = object.render;
+    if (!object.__r) {
+      object.__r = object.render;
 
       object.render = function () {
         pointer._cf.push(this);
-        this._r();
+        this.__r();
       };
 
       pointer._o.push(object);
@@ -504,8 +483,8 @@ export function untrack(...objects) {
 
     // restore original render function to no longer track render
     // order
-    object.render = object._r;
-    object._r = 0; // 0 is the shortest falsy value
+    object.render = object.__r;
+    object.__r = 0; // 0 is the shortest falsy value
 
     removeFromArray(pointer._o, object);
   });

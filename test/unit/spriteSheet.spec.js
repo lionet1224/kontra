@@ -28,13 +28,15 @@ describe('spriteSheet', () => {
         image: new Image(100, 200),
         frameWidth: 10,
         frameHeight: 10,
-        frameMargin: 10
+        margin: 10,
+        spacing: 20
       });
 
       expect(spriteSheet.frame.width).to.equal(10);
       expect(spriteSheet.frame.height).to.equal(10);
       expect(spriteSheet.frame.margin).to.equal(10);
-      expect(spriteSheet._f).to.equal(10);
+      expect(spriteSheet.frame.spacing).to.equal(20);
+      expect(spriteSheet._f).to.equal(9);
     });
 
     it('should create animations if passed an animation object', () => {
@@ -51,8 +53,18 @@ describe('spriteSheet', () => {
 
       expect(SpriteSheetClass.prototype.createAnimations.called).to.be
         .true;
+    });
 
-      SpriteSheetClass.prototype.createAnimations.restore();
+    it('should default margin and spacing to 0', () => {
+      let spriteSheet = SpriteSheet({
+        image: new Image(100, 200),
+        frameWidth: 10,
+        frameHeight: 10
+      });
+
+      expect(spriteSheet.frame.margin).to.equal(0);
+      expect(spriteSheet.frame.spacing).to.equal(0);
+      expect(spriteSheet._f).to.equal(10);
     });
   });
 

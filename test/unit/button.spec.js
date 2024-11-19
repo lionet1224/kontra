@@ -121,14 +121,34 @@ describe('button', () => {
     });
 
     it('should create a DOM node and add it to the page', () => {
-      expect(button._dn).to.exist;
-      expect(button._dn instanceof HTMLButtonElement).to.be.true;
-      expect(button._dn.textContent).to.equal('Hello');
-      expect(document.body.contains(button._dn)).to.be.true;
+      expect(button.node).to.exist;
+      expect(button.node instanceof HTMLButtonElement).to.be.true;
+      expect(button.node.textContent).to.equal('Hello');
+      expect(document.body.contains(button.node)).to.be.true;
+    });
+
+    it('should not allow setting the node', () => {
+      expect(() => (button.node = 1)).to.not.throw;
+      expect(button.node instanceof HTMLButtonElement).to.be.true;
     });
 
     it('should add the button as an immediate sibling to the canvas', () => {
       expect(button.context.canvas.nextSibling).to.equal(button._dn);
+    });
+
+    it('should add the node to a container', () => {
+      const container = document.createElement('div');
+      button.destroy();
+      button = Button({
+        width: 150,
+        text: {
+          text: 'Hello',
+          width: 100
+        },
+        container
+      });
+
+      expect(container.contains(button.node)).to.be.true;
     });
 
     it('should hide the DOM node', () => {
@@ -316,7 +336,11 @@ describe('button', () => {
       sinon.spy(button._dn, 'focus');
       button.focus();
 
-      expect(button._dn.focus.called).to.be.true;
+      expect(
+        button._dn.focus.calledWith(
+          sinon.match({ preventScroll: true })
+        )
+      ).to.be.true;
     });
 
     it('should not focus the DOM node if it is already focused', () => {

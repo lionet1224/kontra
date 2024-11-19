@@ -1,6 +1,5 @@
 [![Version](https://badge.fury.io/js/kontra.svg)](https://badge.fury.io/js/kontra)
-[![Build Status](https://app.travis-ci.com/straker/kontra.svg?branch=main)](https://app.travis-ci.com/straker/kontra)
-[![Coverage Status](https://coveralls.io/repos/straker/kontra/badge.svg?branch=main&service=github)](https://coveralls.io/github/straker/kontra?branch=main)
+[![Build Status](https://github.com/straker/kontra/actions/workflows/tests.yml/badge.svg)](https://github.com/straker/kontra/actions)
 
 # Kontra.js
 
@@ -9,6 +8,10 @@ A lightweight JavaScript gaming micro-library, optimized for js13kGames.
 ## Documentation
 
 All the documentation can be found on the [github page](https://straker.github.io/kontra/).
+
+## Community
+
+If you'd like to chat about Kontra, check out the `#kontra` channel of either [the js13kGames Slack](https://slack.js13kgames.com/) or [the Gamedev.js Discord](https://discord.gg/URWvCwv)!
 
 ## Contributing
 
@@ -24,4 +27,3 @@ When you become a Patron, you get access to behind the scenes development logs, 
 
 - Karar Al-Remahy
 - UnbrandedTech
-- Innkeeper Games

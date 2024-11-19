@@ -1,7 +1,12 @@
 import { getContext } from './core.js';
 import { GameObjectClass } from './gameObject.js';
 import { on, off } from './events.js';
-import { srOnlyStyle, addToDom, removeFromArray } from './utils.js';
+import {
+  srOnlyStyle,
+  focusParams,
+  addToDom,
+  removeFromArray
+} from './utils.js';
 import { collides } from './helpers.js';
 
 /**
@@ -106,7 +111,7 @@ class Scene {
     cullFunction = collides,
 
     /**
-     * Function used to sort the objects of the scene before rendering. Can be used in conjunction with [helpers.depthSort](/api/helpers#depthSort). Only direct objects of the scene are sorted.
+     * Function used to sort the objects of the scene before rendering. Can be used in conjunction with [helpers.depthSort](api/helpers#depthSort). Only direct objects of the scene are sorted.
      *
      * ```js
      * import { Scene, Sprite, depthSort } from 'kontra';
@@ -201,13 +206,13 @@ class Scene {
         x,
         y,
         width,
-        height,
+        height
       });
 
-      if (!this._dn.isConnected) {
-        addToDom(this._dn, canvas);
+      if (!section.isConnected) {
+        addToDom(section, canvas);
       }
-    }
+    };
 
     if (this.context) {
       this._i();
@@ -226,6 +231,16 @@ class Scene {
   }
 
   /**
+   * The HTML section element associated with the scene (used for accessibility). Typically you won't need to interact with the `node` directly, but it can be useful to move its position in the DOM to better support accessible component design.
+   * @memberof Scene
+   * @property {HTMLElement} node
+   */
+  get node() {
+    return this._dn;
+  }
+  // do not allow setting the node value by not having a setter
+
+  /**
    * Add an object to the scene.
    * @memberof Scene
    * @function add
@@ -240,9 +255,7 @@ class Scene {
       // move all objects to be in the scenes DOM node so we can
       // hide and show the DOM node and thus hide and show all the
       // objects
-      getAllNodes(object).map(node => {
-        this._dn.appendChild(node);
-      });
+      this._dn.append(...getAllNodes(object));
     });
   }
 
@@ -259,7 +272,7 @@ class Scene {
       object.parent = null;
 
       getAllNodes(object).map(node => {
-        addToDom(node, this.context);
+        addToDom(node, this.context.canvas);
       });
     });
   }
@@ -280,9 +293,9 @@ class Scene {
     // find first focusable object
     let focusableObject = this._o.find(object => object.focus);
     if (focusableObject) {
-      focusableObject.focus();
+      focusableObject.focus(focusParams);
     } else {
-      this._dn.focus();
+      this._dn.focus(focusParams);
     }
 
     this.onShow();
@@ -369,7 +382,7 @@ class Scene {
   }
 
   /**
-   * Render all objects of the scene by calling the objects `render()` function. If [cullObjects](/api/scene#cullObjects) is set to true then only those objects which are inside the camera bounds will be rendered.
+   * Render all objects of the scene by calling the objects `render()` function. If [cullObjects](api/scene#cullObjects) is set to true then only those objects which are inside the camera bounds will be rendered.
    * @memberof Scene
    * @function render
    */

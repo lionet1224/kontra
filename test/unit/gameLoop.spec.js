@@ -73,8 +73,6 @@ describe('gameLoop', () => {
       loop.start();
 
       expect(window.requestAnimationFrame.called).to.be.true;
-
-      window.requestAnimationFrame.restore();
     });
 
     it('should unset isStopped', () => {
@@ -82,6 +80,20 @@ describe('gameLoop', () => {
       loop.start();
 
       expect(loop.isStopped).to.be.false;
+    });
+
+    it('should call requestAnimationFrame only once if called twice', () => {
+      sinon.stub(window, 'requestAnimationFrame').callsFake(noop);
+
+      loop = GameLoop({
+        render: noop,
+        clearCanvas: false
+      });
+
+      loop.start();
+      loop.start();
+
+      expect(window.requestAnimationFrame.calledOnce).to.be.true;
     });
   });
 
@@ -100,8 +112,6 @@ describe('gameLoop', () => {
       loop.stop();
 
       expect(window.cancelAnimationFrame.called).to.be.true;
-
-      window.cancelAnimationFrame.restore();
     });
 
     it('should set isStopped', () => {
@@ -210,8 +220,6 @@ describe('gameLoop', () => {
       loop._frame();
 
       expect(context.clearRect.called).to.be.true;
-
-      context.clearRect.restore();
     });
 
     it('should not clear the canvas if clearCanvas is false', () => {
@@ -227,8 +235,6 @@ describe('gameLoop', () => {
       loop._frame();
 
       expect(context.clearRect.called).to.be.false;
-
-      context.clearRect.restore();
     });
 
     it('should call clearCanvas on the passed in context', () => {
@@ -251,16 +257,30 @@ describe('gameLoop', () => {
       expect(context.clearRect.called).to.be.true;
     });
 
-    it('should emit the tick event', done => {
-      on('tick', done);
+    it('should emit the tick event', () => {
+      let spy = sinon.spy();
+      on('tick', spy);
 
       loop = GameLoop({
         render: noop
       });
-      loop._last = performance.now() - 1e3 / 60;
+      loop._last = performance.now() - 1001 / 60;
       loop._frame();
 
-      throw new Error('should not get here');
+      expect(spy.called).to.be.true;
+    });
+
+    it('should emit the tick event for each loop update', () => {
+      let spy = sinon.spy();
+      on('tick', spy);
+
+      loop = GameLoop({
+        render: noop
+      });
+      loop._last = performance.now() - 2001 / 60;
+      loop._frame();
+
+      expect(spy.calledTwice).to.be.true;
     });
 
     it('should not update if page is blurred', done => {

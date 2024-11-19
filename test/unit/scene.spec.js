@@ -1,5 +1,10 @@
 import Scene, { SceneClass } from '../../src/scene.js';
-import { _reset, init, getContext, getCanvas } from '../../src/core.js';
+import {
+  _reset,
+  init,
+  getContext,
+  getCanvas
+} from '../../src/core.js';
 import { emit } from '../../src/events.js';
 import { noop, srOnlyStyle } from '../../src/utils.js';
 import { collides } from '../../src/helpers.js';
@@ -69,13 +74,18 @@ describe('scene', () => {
     });
 
     it('should create a DOM node and add it to the page', () => {
-      expect(scene._dn).to.exist;
-      expect(scene._dn.id).to.equal(scene.id);
-      expect(scene._dn.tabIndex).to.equal(-1);
-      expect(scene._dn.getAttribute('aria-label')).to.equal(
+      expect(scene.node).to.exist;
+      expect(scene.node.id).to.equal(scene.id);
+      expect(scene.node.tabIndex).to.equal(-1);
+      expect(scene.node.getAttribute('aria-label')).to.equal(
         scene.name
       );
-      expect(document.body.contains(scene._dn)).to.be.true;
+      expect(document.body.contains(scene.node)).to.be.true;
+    });
+
+    it('should not allow setting the node', () => {
+      expect(() => (scene.node = 1)).to.not.throw;
+      expect(scene.node instanceof HTMLElement).to.be.true;
     });
 
     it('should add objects', () => {
@@ -219,9 +229,15 @@ describe('scene', () => {
     });
 
     it('should focus the DOM node', () => {
+      sinon.spy(scene._dn, 'focus');
       scene.show();
 
       expect(document.activeElement).to.equal(scene._dn);
+      expect(
+        scene._dn.focus.calledWith(
+          sinon.match({ preventScroll: true })
+        )
+      ).to.be.true;
     });
 
     it('should focus the first focusable object', () => {
@@ -231,7 +247,9 @@ describe('scene', () => {
       scene.add(object);
       scene.show();
 
-      expect(object.focus.called).to.be.true;
+      expect(
+        object.focus.calledWith(sinon.match({ preventScroll: true }))
+      ).to.be.true;
     });
 
     it('should call onShow', () => {
@@ -656,8 +674,6 @@ describe('scene', () => {
       expect(spy.firstCall.calledWith(290, 290)).to.be.true;
       let calls = spy.getCalls();
       expect(calls[calls.length - 2].calledWith(290, 290)).to.be.true;
-
-      spy.restore();
     });
 
     it('should sort objects', () => {

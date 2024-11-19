@@ -83,14 +83,15 @@ __Note:__ Some of the more advance classes – such as Button or Grid – requir
 
 | Name            | Functionality Enabled |
 | --------------- | ------------- |
-| `acceleration`  | `acceleration`, `ddx`, `ddy` |
+| `acceleration`  | `acceleration`, `ddx`, `ddy`, 'ddrotation' |
 | `anchor`        | `anchor` |
 | `group`         | `children`, `parent`, `addChild`, `removeChild` |
 | `opacity`       | `opacity` |
+| `radius`        | `radius`, collision detection with circle |
 | `rotation`      | `rotation` |
 | `scale`         | `scaleX`, `scaleY`, `setScale()` |
 | `ttl`           | `ttl`, `isAlive` |
-| `velocity`      | `velocity`, `dx`, `dy` |
+| `velocity`      | `velocity`, `dx`, `dy`, 'drotation' |
 
 #### `sprite` Options:
 
@@ -103,7 +104,7 @@ __Note:__ Some of the more advance classes – such as Button or Grid – requir
 
 | Name          | Functionality Enabled |
 | ------------- | ------------- |
-| `autoNewline` | Setting a fixed with that automatically adds new lines to the text |
+| `autoNewline` | Setting a fixed width that automatically adds new lines to the text |
 | `newline`     | Support for new line characters (`\n`) in the text |
 | `rtl`         | Support for RTL languages |
 | `align`       | `textAlign` |

@@ -1,7 +1,7 @@
 import { SpriteClass } from './sprite.js';
 import Text from './text.js';
 import { track } from './pointer.js';
-import { srOnlyStyle, noop, addToDom } from './utils.js';
+import { srOnlyStyle, focusParams, noop, addToDom } from './utils.js';
 
 /**
  * An accessible button. Supports screen readers and keyboard navigation using the <kbd>Tab</kbd> key. The button is automatically [tracked](api/pointer#track) by the pointer and accepts all pointer functions, but you will still need to call [initPointer](api/pointer#initPointer) to have pointer events enabled.
@@ -13,6 +13,7 @@ import { srOnlyStyle, noop, addToDom } from './utils.js';
  * @param {Boolean} [properties.disabled] - Whether the button is disabled when created.
  * @param {Number} [properties.padX=0] - The horizontal padding.
  * @param {Number} [properties.padY=0] - The vertical padding.
+ * @param {HTMLElement} [properties.container] - The HTMLElement that the HTMLButtonElement will be appended to.
  * @param {Function} [properties.onEnable] - Function called when the button is enabled.
  * @param {Function} [properties.onDisable] - Function called when the button is disabled.
  * @param {Function} [properties.onFocus] - Function called when the button is focused by the keyboard.
@@ -40,6 +41,7 @@ class Button extends SpriteClass {
 
     text,
     disabled = false,
+    container,
     onDown,
     onUp,
     ...props
@@ -94,7 +96,7 @@ class Button extends SpriteClass {
     button.addEventListener('keydown', evt => this._kd(evt));
     button.addEventListener('keyup', evt => this._ku(evt));
 
-    addToDom(button, this.context.canvas);
+    addToDom(button, container ?? this.context.canvas);
 
     this._uw();
     this._p();
@@ -114,6 +116,16 @@ class Button extends SpriteClass {
     this._d = true;
     this.textNode.text = value;
   }
+
+  /**
+   * The HTML button element associated with the button (used for accessibility). Typically you won't need to interact with the `node` directly, but it can be useful to move its position in the DOM to better support accessible component design.
+   * @memberof Button
+   * @property {HTMLButtonElement} node
+   */
+  get node() {
+    return this._dn;
+  }
+  // do not allow setting the node value by not having a setter
 
   /**
    * Clean up the button by removing the HTMLButtonElement from the DOM.
@@ -189,7 +201,8 @@ class Button extends SpriteClass {
        */
       this.focused = true;
       // prevent infinite loop
-      if (document.activeElement != this._dn) this._dn.focus();
+      if (document.activeElement != this._dn)
+        this._dn.focus(focusParams);
 
       this.onFocus();
     }

@@ -2,14 +2,18 @@ import GameObject, { GameObjectClass } from '../../src/gameObject.js';
 import { _reset, init, getContext } from '../../src/core.js';
 import { noop } from '../../src/utils.js';
 import { degToRad } from '../../src/helpers.js';
+import Vector from '../../src/vector.js';
 
 // test-context:start
 let testContext = {
   GAMEOBJECT_ANCHOR: true,
   GAMEOBJECT_GROUP: true,
   GAMEOBJECT_OPACITY: true,
+  GAMEOBJECT_RADIUS: true,
   GAMEOBJECT_ROTATION: true,
-  GAMEOBJECT_SCALE: true
+  GAMEOBJECT_SCALE: true,
+  GAMEOBJECT_VELOCITY: true,
+  GAMEOBJECT_ACCELERATION: true
 };
 // test-context:end
 
@@ -22,10 +26,6 @@ describe(
     let spy, gameObject;
     beforeEach(() => {
       gameObject = GameObject();
-    });
-
-    afterEach(() => {
-      spy && spy.restore && spy.restore();
     });
 
     it('should export class', () => {
@@ -180,8 +180,24 @@ describe(
         });
       }
 
+      if (testContext.GAMEOBJECT_RADIUS) {
+        it('should set default radius', () => {
+          expect(gameObject.radius).to.equal(undefined);
+        });
+
+        it('should set radius property', () => {
+          gameObject = GameObject({ radius: 0.5 });
+
+          expect(gameObject.radius).to.equal(0.5);
+        });
+      } else {
+        it('should not default radius', () => {
+          expect(gameObject.radius).to.not.exist;
+        });
+      }
+
       if (testContext.GAMEOBJECT_ROTATION) {
-        it('should set default camera', () => {
+        it('should set default rotation', () => {
           expect(gameObject.rotation).to.equal(0);
         });
 
@@ -191,13 +207,51 @@ describe(
           expect(gameObject.rotation).to.equal(0.5);
         });
       } else {
-        it('should not default camera', () => {
+        it('should not default rotation', () => {
           expect(gameObject.rotation).to.not.exist;
         });
       }
 
+      if (
+        testContext.GAMEOBJECT_ROTATION &&
+        testContext.GAMEOBJECT_VELOCITY
+      ) {
+        it('should set default drotation', () => {
+          expect(gameObject.drotation).to.equal(0);
+        });
+
+        it('should set drotation property', () => {
+          gameObject = GameObject({ drotation: 0.5 });
+
+          expect(gameObject.drotation).to.equal(0.5);
+        });
+      } else {
+        it('should not default drotation', () => {
+          expect(gameObject.drotation).to.not.exist;
+        });
+      }
+
+      if (
+        testContext.GAMEOBJECT_ROTATION &&
+        testContext.GAMEOBJECT_ACCELERATION
+      ) {
+        it('should set default ddrotation', () => {
+          expect(gameObject.ddrotation).to.equal(0);
+        });
+
+        it('should set ddrotation property', () => {
+          gameObject = GameObject({ ddrotation: 0.5 });
+
+          expect(gameObject.ddrotation).to.equal(0.5);
+        });
+      } else {
+        it('should not default ddrotation', () => {
+          expect(gameObject.ddrotation).to.not.exist;
+        });
+      }
+
       if (testContext.GAMEOBJECT_SCALE) {
-        it('should set default camera', () => {
+        it('should set default scale', () => {
           expect(gameObject.scaleX).to.equal(1);
           expect(gameObject.scaleY).to.equal(1);
         });
@@ -209,7 +263,7 @@ describe(
           expect(gameObject.scaleY).to.equal(20);
         });
       } else {
-        it('should not default camera', () => {
+        it('should not default scale', () => {
           expect(gameObject.scaleY).to.not.exist;
           expect(gameObject.scaleY).to.not.exist;
         });
@@ -220,15 +274,6 @@ describe(
     // render
     // --------------------------------------------------
     describe('render', () => {
-      afterEach(() => {
-        gameObject.context.translate.restore &&
-          gameObject.context.translate.restore();
-        gameObject.context.rotate.restore &&
-          gameObject.context.rotate.restore();
-        gameObject.context.scale.restore &&
-          gameObject.context.scale.restore();
-      });
-
       it('should translate to the x and y position', () => {
         gameObject.x = 10;
         gameObject.y = 20;
@@ -313,7 +358,7 @@ describe(
       }
 
       if (testContext.GAMEOBJECT_ANCHOR) {
-        it('should translate to the anchor position', () => {
+        it('should translate to the anchor position (square)', () => {
           gameObject.anchor = { x: 0.5, y: 0.5 };
           gameObject.width = 20;
           gameObject.height = 30;
@@ -329,6 +374,35 @@ describe(
             )
           ).to.be.true;
         });
+
+        if (testContext.GAMEOBJECT_RADIUS) {
+          it('should translate to the anchor position (circle)', () => {
+            gameObject.anchor = { x: 0.5, y: 0.5 };
+            gameObject.radius = 10;
+
+            sinon.stub(gameObject.context, 'translate');
+
+            gameObject.render();
+
+            expect(
+              gameObject.context.translate.firstCall.calledWith(
+                -10,
+                -10
+              )
+            ).to.be.true;
+          });
+        } else {
+          it('should not translate to the anchor position (circle)', () => {
+            gameObject.anchor = { x: 0.5, y: 0.5 };
+            gameObject.radius = 10;
+
+            sinon.stub(gameObject.context, 'translate');
+
+            gameObject.render();
+
+            expect(gameObject.context.translate.called).to.be.false;
+          });
+        }
 
         it('should not translate if the anchor position is {0, 0}', () => {
           sinon.stub(gameObject.context, 'translate');
@@ -378,8 +452,6 @@ describe(
           gameObject.render();
 
           expect(spy.set.calledWith(0.5)).to.be.true;
-
-          spy.set.restore();
         });
       } else {
         it('should not set the globalAlpha', () => {
@@ -394,8 +466,6 @@ describe(
           gameObject.render();
 
           expect(spy.set.called).to.be.false;
-
-          spy.set.restore();
         });
       }
 
@@ -490,6 +560,33 @@ describe(
         });
       }
 
+      if (testContext.GAMEOBJECT_RADIUS) {
+        it('should have radius', () => {
+          gameObject.radius = 10;
+          expect(gameObject.world.radius).to.deep.equal({
+            x: 10,
+            y: 10
+          });
+        });
+
+        it('should not have radius if not set', () => {
+          expect(gameObject.world.radius).to.not.exist;
+        });
+
+        it('should update world radius', () => {
+          gameObject.radius = 0.5;
+
+          expect(gameObject.world.radius).to.deep.equal({
+            x: 0.5,
+            y: 0.5
+          });
+        });
+      } else {
+        it('should not have radius', () => {
+          expect(gameObject.world.radius).to.not.exist;
+        });
+      }
+
       if (testContext.GAMEOBJECT_ROTATION) {
         it('should default rotation', () => {
           expect(gameObject.world.rotation).to.equal(0);
@@ -530,6 +627,19 @@ describe(
           expect(gameObject.world.width).to.equal(20);
           expect(gameObject.world.height).to.equal(40);
         });
+
+        if (testContext.GAMEOBJECT_RADIUS) {
+          it('should update radius based on scale', () => {
+            gameObject.radius = 10;
+            gameObject.scaleX = 2;
+            gameObject.scaleY = 3;
+
+            expect(gameObject.world.radius).to.deep.equal({
+              x: 20,
+              y: 30
+            });
+          });
+        }
       } else {
         it('should not have scale', () => {
           expect(gameObject.world.scaleX).to.not.exist;
@@ -631,6 +741,25 @@ describe(
             expect(gameObject.world.width).to.equal(60);
             expect(gameObject.world.height).to.equal(120);
           });
+
+          if (testContext.GAMEOBJECT_RADIUS) {
+            it('should update radius based on all scales', () => {
+              GameObject({
+                scaleX: 2,
+                scaleY: 2,
+                children: [gameObject]
+              });
+
+              gameObject.radius = 10;
+              gameObject.scaleX = 3;
+              gameObject.scaleY = 4;
+
+              expect(gameObject.world.radius).to.deep.equal({
+                x: 60,
+                y: 80
+              });
+            });
+          }
         }
 
         if (
@@ -706,6 +835,66 @@ describe(
             );
           });
         }
+      }
+    });
+
+    // --------------------------------------------------
+    // advance
+    // --------------------------------------------------
+    describe('advance', () => {
+      if (
+        (testContext.GAMEOBJECT_ROTATION &&
+          testContext.GAMEOBJECT_VELOCITY) ||
+        testContext.GAMEOBJECT_ACCELERATION
+      ) {
+        it('should call parent advance', () => {
+          gameObject.position = Vector(5, 10);
+          gameObject.velocity = Vector(15, 20);
+
+          gameObject.advance();
+
+          expect(gameObject.position.x).to.equal(20);
+          expect(gameObject.position.y).to.equal(30);
+        });
+      }
+
+      if (
+        testContext.GAMEOBJECT_ROTATION &&
+        testContext.GAMEOBJECT_VELOCITY &&
+        testContext.GAMEOBJECT_ACCELERATION
+      ) {
+        it('should add the angular acceleration to the angular velocity', () => {
+          gameObject.drotation = 0.5;
+          gameObject.ddrotation = 0.5;
+
+          gameObject.advance();
+
+          expect(gameObject.drotation).to.equal(1);
+        });
+      }
+
+      if (
+        testContext.GAMEOBJECT_ROTATION &&
+        testContext.GAMEOBJECT_VELOCITY
+      ) {
+        it('should add the angular velocity to the rotation', () => {
+          gameObject.rotation = 0.5;
+          gameObject.drotation = 0.5;
+
+          gameObject.advance();
+
+          expect(gameObject.rotation).to.equal(1);
+        });
+      } else {
+        it('should not modify the rotation', () => {
+          gameObject.rotation = 0;
+          gameObject.drotation = 0.5;
+          gameObject.ddrotation = 0.5;
+
+          gameObject.advance();
+
+          expect(gameObject.rotation).to.equal(0);
+        });
       }
     });
 

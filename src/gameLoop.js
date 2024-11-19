@@ -110,10 +110,10 @@ export default function GameLoop({
       return;
     }
 
-    emit('tick');
     accumulator += dt;
 
     while (accumulator >= delta) {
+      emit('tick');
       loop.update(step);
 
       accumulator -= delta;
@@ -177,9 +177,11 @@ export default function GameLoop({
      * @function start
      */
     start() {
-      last = performance.now();
-      this.isStopped = false;
-      requestAnimationFrame(frame);
+      if (this.isStopped) {
+        last = performance.now();
+        this.isStopped = false;
+        requestAnimationFrame(frame);
+      }
     },
 
     /**

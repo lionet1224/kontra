@@ -17,10 +17,11 @@ let options = {
     'GAMEOBJECT_ANCHOR',
     'GAMEOBJECT_GROUP',
     'GAMEOBJECT_OPACITY',
+    'GAMEOBJECT_RADIUS',
     'GAMEOBJECT_ROTATION',
     'GAMEOBJECT_SCALE'
   ],
-  sprite: ['SPRITE_IMAGE', 'SPRITE_ANIMATION'],
+  sprite: ['SPRITE_IMAGE', 'SPRITE_ANIMATION', 'GAMEOBJECT_RADIUS'],
   text: [
     'TEXT_AUTONEWLINE',
     'TEXT_NEWLINE',
@@ -65,7 +66,7 @@ Object.keys(options).forEach(async option => {
       path.join(__dirname, '../setup.js'),
       'utf-8'
     );
-    setup = setup.replace('../src/core.js', '../../src/core.js');
+    setup = setup.replaceAll('../src/', '../../src/');
 
     // copy test suite and change path
     let test = fs.readFileSync(

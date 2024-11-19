@@ -4,7 +4,8 @@ import { noop } from '../../src/utils.js';
 // test-context:start
 let testContext = {
   SPRITE_IMAGE: true,
-  SPRITE_ANIMATION: true
+  SPRITE_ANIMATION: true,
+  GAMEOBJECT_RADIUS: true
 };
 // test-context:end
 
@@ -170,9 +171,24 @@ describe(
         sprite.render();
 
         expect(sprite.context.fillRect.called).to.be.true;
-
-        sprite.context.fillRect.restore();
       });
+
+      if (testContext.GAMEOBJECT_RADIUS) {
+        it('should draw a circle sprite', () => {
+          let sprite = Sprite({
+            x: 10,
+            y: 20,
+            radius: 10,
+            color: true
+          });
+
+          sinon.stub(sprite.context, 'arc').callsFake(noop);
+
+          sprite.render();
+
+          expect(sprite.context.arc.called).to.be.true;
+        });
+      }
 
       if (testContext.SPRITE_IMAGE) {
         it('should draw an image sprite', () => {
@@ -191,8 +207,6 @@ describe(
           sprite.render();
 
           expect(sprite.context.drawImage.called).to.be.true;
-
-          sprite.context.drawImage.restore();
         });
       }
 
@@ -224,8 +238,6 @@ describe(
           sprite.render();
 
           expect(sprite.currentAnimation.render.called).to.be.true;
-
-          sprite.currentAnimation.render.restore();
         });
       }
     });

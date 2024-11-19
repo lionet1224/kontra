@@ -3,6 +3,18 @@ import { on } from './events.js';
 import { clamp, getWorldRect } from './helpers.js';
 import { removeFromArray } from './utils.js';
 
+// @ifdef TILEENGINE_TILED
+
+// Tiled uses the bits 32 and 31 to denote that a tile is
+// flipped horizontally or vertically (respectively)
+// @see https://doc.mapeditor.org/en/stable/reference/global-tile-ids/
+let FLIPPED_HORIZONTALLY = 0x80000000;
+let FLIPPED_VERTICALLY = 0x40000000;
+// tile can be rotated also and use the bit 30 in conjunction
+// with bit 32 or/and 31 to denote that
+let FLIPPED_DIAGONALLY = 0x20000000;
+// @endif
+
 /**
  * Get the row from the y coordinate.
  * @private
@@ -50,7 +62,8 @@ function getCol(x, tilewidth) {
  * @param {Object[]} properties.tilesets - Array of tileset objects.
  * @param {Number} properties.<tilesetN>.firstgid - First tile index of the tileset. The first tileset will have a firstgid of 1 as 0 represents an empty tile.
  * @param {String|HTMLImageElement} properties.<tilesetN>.image - Relative path to the HTMLImageElement or an HTMLImageElement. If passing a relative path, the image file must have been [loaded](api/assets#load) first.
- * @param {Number} [properties.<tilesetN>.margin=0] - The amount of whitespace between each tile (in pixels).
+ * @param {Number} [properties.<tilesetN>.spacing=0] - The amount of whitespace between each tile (in pixels).
+ * @param {Number} [properties.<tilesetN>.margin=0] - The amount of whitespace border around the entire tileset image (in pixels).
  * @param {Number} [properties.<tilesetN>.tilewidth] - Width of the tileset (in pixels). Defaults to properties.tilewidth.
  * @param {Number} [properties.<tilesetN>.tileheight] - Height of the tileset (in pixels). Defaults to properties.tileheight.
  * @param {String} [properties.<tilesetN>.source] - Relative path to the source JSON file. The source JSON file must have been [loaded](api/assets#load) first.
@@ -297,6 +310,61 @@ class TileEngine {
     });
   }
   // @endif
+
+  /**
+   * Get the tile position of a pointer event.
+   *
+   * ```js
+   * import { initPointer, track, TileEngine } from 'kontra';
+   *
+   * initPointer();
+   * let tileEngine = TileEngine({
+   *   tilewidth: 32,
+   *   tileheight: 32,
+   *   width: 4,
+   *   height: 4,
+   *   tilesets: [{
+   *     // ...
+   *   }],
+   *   layers: [{
+   *     name: 'collision',
+   *     data: [ 0,0,0,0,
+   *             0,1,4,0,
+   *             0,2,5,0,
+   *             0,0,0,0 ]
+   *   }],
+   *   onDown(evt) {
+   *     // row and col is the tile position that was clicked
+   *     let { row, col } = this.getPosition(evt);
+   *   }
+   * });
+   *
+   * track(tileEngine);
+   * ```
+   * @memberof TileEngine
+   * @function getPosition
+   *
+   * @param {{x: Number, y: Number}} event - The pointer event with `x` and `y` properties.
+   *
+   * @returns {{x: Number, y: Number, row: Number, col: Number}} The `x`, `y`, `row`, and `col` of the pointer event within the tile engine.
+   */
+  getPosition(event) {
+    let rect = getCanvas().getBoundingClientRect();
+    let x = event.x - rect.x;
+    let y = event.y - rect.y;
+
+    // @ifdef TILEENGINE_CAMERA
+    x += this.sx;
+    y += this.sy;
+    // @endif
+
+    return {
+      x,
+      y,
+      row: getRow(y, this.tileheight),
+      col: getCol(x, this.tilewidth)
+    };
+  }
 
   // @ifdef TILEENGINE_DYNAMIC
   /**
@@ -577,14 +645,14 @@ class TileEngine {
       canvas.height = mapheight;
 
       layerCanvases[name] = canvas;
-      this._r(layer, context);
+      this._rl(layer, context);
     }
 
     // @ifdef TILEENGINE_DYNAMIC
     if (layer._d) {
       layer._d = false;
       context.clearRect(0, 0, canvas.width, canvas.height);
-      this._r(layer, context);
+      this._rl(layer, context);
     }
     // @endif
 
@@ -606,7 +674,7 @@ class TileEngine {
       layerMap[name] = layer;
 
       if (data && visible != false) {
-        this._r(layer, _ctx);
+        this._rl(layer, _ctx);
       }
     });
   }
@@ -617,7 +685,7 @@ class TileEngine {
    * @param {Object} layer - Layer data.
    * @param {Context} context - Context to draw layer to.
    */
-  _r(layer, context) {
+  _rl(layer, context) {
     let { opacity, data = [] } = layer;
     let { tilesets, width, tilewidth, tileheight } = this;
 
@@ -627,6 +695,44 @@ class TileEngine {
     data.map((tile, index) => {
       // skip empty tiles (0)
       if (!tile) return;
+
+      let flipped = 0;
+      let rotated = 0;
+
+      // @ifdef TILEENGINE_TILED
+      // read flags
+      let flippedHorizontal = tile & FLIPPED_HORIZONTALLY;
+      let flippedVertical = tile & FLIPPED_VERTICALLY;
+      let turnedClockwise = 0;
+      let turnedAntiClockwise = 0;
+      let flippedAndturnedClockwise = 0;
+      let flippedAndturnedAntiClockwise = 0;
+      let flippedDiagonally = 0;
+      flipped = flippedHorizontal || flippedVertical;
+
+      tile &= ~(FLIPPED_HORIZONTALLY | FLIPPED_VERTICALLY);
+
+      flippedDiagonally = tile & FLIPPED_DIAGONALLY;
+      // Identify tile rotation
+      if (flippedDiagonally) {
+        if (flippedHorizontal && flippedVertical) {
+          flippedAndturnedClockwise = 1;
+        } else if (flippedHorizontal) {
+          turnedClockwise = 1;
+        } else if (flippedVertical) {
+          turnedAntiClockwise = 1;
+        } else {
+          flippedAndturnedAntiClockwise = 1;
+        }
+        rotated =
+          turnedClockwise ||
+          turnedAntiClockwise ||
+          flippedAndturnedClockwise ||
+          flippedAndturnedAntiClockwise;
+
+        tile &= ~FLIPPED_DIAGONALLY;
+      }
+      // @endif
 
       // find the tileset the tile belongs to
       // assume tilesets are ordered by firstgid
@@ -639,14 +745,58 @@ class TileEngine {
         }
       }
 
-      let { image, margin = 0, firstgid, columns } = tileset;
+      let {
+        image,
+        spacing = 0,
+        margin = 0,
+        firstgid,
+        columns
+      } = tileset;
+
       let offset = tile - firstgid;
-      let cols = columns ?? (image.width / (tilewidth + margin)) | 0;
+      let cols = columns ?? (image.width / (tilewidth + spacing)) | 0;
 
       let x = (index % width) * tilewidth;
       let y = ((index / width) | 0) * tileheight;
-      let sx = (offset % cols) * (tilewidth + margin);
-      let sy = ((offset / cols) | 0) * (tileheight + margin);
+      let sx = margin + (offset % cols) * (tilewidth + spacing);
+      let sy =
+        margin + ((offset / cols) | 0) * (tileheight + spacing);
+
+      // @ifdef TILEENGINE_TILED
+      if (rotated) {
+        context.save();
+        // Translate to the center of the tile
+        context.translate(x + tilewidth / 2, y + tileheight / 2);
+        if (turnedAntiClockwise || flippedAndturnedAntiClockwise) {
+          // Rotate 90° anticlockwise
+          context.rotate(-Math.PI / 2); // 90° in radians
+        } else if (turnedClockwise || flippedAndturnedClockwise) {
+          // Rotate 90° clockwise
+          context.rotate(Math.PI / 2); // 90° in radians
+        }
+        if (
+          flippedAndturnedClockwise ||
+          flippedAndturnedAntiClockwise
+        ) {
+          // Then flip horizontally
+          context.scale(-1, 1);
+        }
+        x = -tilewidth / 2;
+        y = -tileheight / 2;
+      } else if (flipped) {
+        context.save();
+        context.translate(
+          x + (flippedHorizontal ? tilewidth : 0),
+          y + (flippedVertical ? tileheight : 0)
+        );
+        context.scale(
+          flippedHorizontal ? -1 : 1,
+          flippedVertical ? -1 : 1
+        );
+        x = flipped ? 0 : x;
+        y = flipped ? 0 : y;
+      }
+      // @endif
 
       context.drawImage(
         image,
@@ -659,6 +809,12 @@ class TileEngine {
         tilewidth,
         tileheight
       );
+
+      // @ifdef TILEENGINE_TILED
+      if (flipped || rotated) {
+        context.restore();
+      }
+      // @endif
     });
 
     context.restore();

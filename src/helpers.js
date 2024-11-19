@@ -1,3 +1,5 @@
+import { circleRectCollision } from './utils.js';
+
 /**
  * A group of helpful functions that are commonly used for game development. Includes things such as converting between radians and degrees and getting random integers.
  *
@@ -104,61 +106,6 @@ export function movePoint(point, angle, distance) {
     x: point.x + Math.cos(angle) * distance,
     y: point.y + Math.sin(angle) * distance
   };
-}
-
-/**
- * Return a random integer between a minimum (inclusive) and maximum (inclusive) integer.
- * @see https://stackoverflow.com/a/1527820/2124254
- * @function randInt
- *
- * @param {Number} min - Min integer.
- * @param {Number} max - Max integer.
- *
- * @returns {Number} Random integer between min and max values.
- */
-export function randInt(min, max) {
-  return ((Math.random() * (max - min + 1)) | 0) + min;
-}
-
-/**
- * Create a seeded random number generator.
- *
- * ```js
- * import { seedRand } from 'kontra';
- *
- * let rand = seedRand('kontra');
- * console.log(rand());  // => always 0.33761959057301283
- * ```
- * @see https://stackoverflow.com/a/47593316/2124254
- * @see https://github.com/bryc/code/blob/master/jshash/PRNGs.md
- *
- * @function seedRand
- *
- * @param {String} str - String to seed the random number generator.
- *
- * @returns {() => Number} Seeded random number generator function.
- */
-export function seedRand(str) {
-  // based on the above references, this was the smallest code yet
-  // decent quality seed random function
-
-  // first create a suitable hash of the seed string using xfnv1a
-  // @see https://github.com/bryc/code/blob/master/jshash/PRNGs.md#addendum-a-seed-generating-functions
-  for (var i = 0, h = 2166136261 >>> 0; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 16777619);
-  }
-  h += h << 13;
-  h ^= h >>> 7;
-  h += h << 3;
-  h ^= h >>> 17;
-  let seed = (h += h << 5) >>> 0;
-
-  // then return the seed function and discard the first result
-  // @see https://github.com/bryc/code/blob/master/jshash/PRNGs.md#lcg-lehmer-rng
-  let rand = () =>
-    ((2 ** 31 - 1) & (seed = Math.imul(48271, seed))) / 2 ** 31;
-  rand();
-  return rand;
 }
 
 /**
@@ -290,13 +237,50 @@ export function getStoreItem(key) {
  * @returns {Boolean} `true` if the objects collide, `false` otherwise.
  */
 export function collides(obj1, obj2) {
-  [obj1, obj2] = [obj1, obj2].map(obj => getWorldRect(obj));
+  let rect1 = getWorldRect(obj1);
+  let rect2 = getWorldRect(obj2);
+
+  // @ifdef GAMEOBJECT_RADIUS
+  // don't work with ellipses (i.e. scaling has made
+  // the width and height not the same which means it's
+  // an ellipse and not a circle)
+  if (
+    (obj1.radius && rect1.width != rect1.height) ||
+    (obj2.radius && rect2.width != rect2.height)
+  ) {
+    return false;
+  }
+
+  [rect1, rect2] = [rect1, rect2].map(rect => {
+    if ((rect == rect1 ? obj1 : obj2).radius) {
+      rect.radius = rect.width / 2;
+      rect.x += rect.radius;
+      rect.y += rect.radius;
+    }
+
+    return rect;
+  });
+
+  if (obj1.radius && obj2.radius) {
+    return (
+      Math.hypot(rect1.x - rect2.x, rect1.y - rect2.y) <
+      rect1.radius + rect2.radius
+    );
+  }
+
+  if (obj1.radius || obj2.radius) {
+    return circleRectCollision(
+      obj1.radius ? rect1 : rect2, // circle
+      obj1.radius ? obj2 : obj1 // rect
+    );
+  }
+  // @endif
 
   return (
-    obj1.x < obj2.x + obj2.width &&
-    obj1.x + obj1.width > obj2.x &&
-    obj1.y < obj2.y + obj2.height &&
-    obj1.y + obj1.height > obj2.y
+    rect1.x < rect2.x + rect2.width &&
+    rect1.x + rect1.width > rect2.x &&
+    rect1.y < rect2.y + rect2.height &&
+    rect1.y + rect1.height > rect2.y
   );
 }
 
@@ -309,13 +293,21 @@ export function collides(obj1, obj2) {
  * @returns {{x: Number, y: Number, width: Number, height: Number}} The world `x`, `y`, `width`, and `height` of the object.
  */
 export function getWorldRect(obj) {
-  let { x = 0, y = 0, width, height } = obj.world || obj;
+  let { x = 0, y = 0, width, height, radius } = obj.world || obj;
 
   // take into account tileEngine
   if (obj.mapwidth) {
     width = obj.mapwidth;
     height = obj.mapheight;
   }
+
+  // @ifdef GAMEOBJECT_RADIUS
+  // account for circle
+  if (radius) {
+    width = radius.x * 2;
+    height = radius.y * 2;
+  }
+  // @endif
 
   // @ifdef GAMEOBJECT_ANCHOR
   // account for anchor
@@ -351,7 +343,7 @@ export function getWorldRect(obj) {
  *
  * @param {{x: Number, y: Number, width: Number, height: Number}|{world: {x: Number, y: Number, width: Number, height: Number}}} obj1 - First object to compare.
  * @param {{x: Number, y: Number, width: Number, height: Number}|{world: {x: Number, y: Number, width: Number, height: Number}}} obj2 - Second object to compare.
- * @param {String} [prop='y'] - Objects [getWorldRect](/api/helpers#getWorldRect) property to compare.
+ * @param {String} [prop='y'] - Objects [getWorldRect](api/helpers#getWorldRect) property to compare.
  *
  * @returns {Number} The difference between the objects compare property.
  */
